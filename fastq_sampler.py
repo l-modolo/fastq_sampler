@@ -22,7 +22,7 @@ import argparse
 from progressbar import * 
 
 class ProgressBarWrapper() :
-  def __init__(self, name, maxval, unit = "B") :
+	def __init__(self, name, maxval, unit = "B") :
 		widgets = [name, SimpleProgress(' / '), ' ', Percentage(), ' ', Bar(marker='=',left='[',right=']'), ' ', ETA('%s'), ' / ', Timer('%s'), '  ', FileTransferSpeed(unit)]
 		self.pbar = ProgressBar(widgets=widgets, maxval=maxval)
 		self.pbar.start()
@@ -51,6 +51,7 @@ if len(args.fileName2) > 0 :
 
 with open(args.fileName1, 'r') as file1 :
 	np = sum(1 for line in file1)
+
 np = int((np) / 4)
 print("total number of reads : ", str(np))
 
