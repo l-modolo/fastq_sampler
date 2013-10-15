@@ -16,27 +16,17 @@
 #You should have received a copy of the GNU Lesser General Public
 #License along with this program; if not, write to the Free Software
 #Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
-
+import time
+import sys
 import random
 import argparse
-from progressbar import * 
+import ntpath
 
-class ProgressBarWrapper() :
-	def __init__(self, name, maxval, unit = "B") :
-		widgets = [name, SimpleProgress(' / '), ' ', Percentage(), ' ', Bar(marker='=',left='[',right=']'), ' ', ETA('%s'), ' / ', Timer('%s'), '  ', FileTransferSpeed(unit)]
-		self.pbar = ProgressBar(widgets=widgets, maxval=maxval)
-		self.pbar.start()
-		self._counter = 0
-	
-	def update(self, test = 0) :
-		self._counter += 1
-		self.pbar.update(self._counter)
-	
-	def finish(self) :
-		self.pbar.finish()
+def path_leaf(path) :
+	head, tail = ntpath.split(path)
+	return tail or ntpath.basename(head)
 
-
-parser = argparse.ArgumentParser(prog='extract_random_line')
+parser = argparse.ArgumentParser(prog='fastq_sampler')
 parser.add_argument('-i', action='store', dest='number', help='number of reads to sample')
 parser.add_argument('-f', action='store', dest='fileName1', help='fastq')
 parser.add_argument('-g', action='store', dest='fileName2', help='fastq paired')
@@ -47,13 +37,15 @@ k = int(args.number)
 maxval = k
 if len(args.fileName2) > 0 :
 	print("fastq paired : ", args.fileName2)
-	maxval = k*2
 
+sys.stdout.write("counting reads number ...")
+sys.stdout.flush()
 with open(args.fileName1, 'r') as file1 :
 	np = sum(1 for line in file1)
 
 np = int((np) / 4)
-print("total number of reads : ", str(np))
+sys.stdout.write("\rtotal number of reads : "+str(np)+"\n")
+sys.stdout.flush()
 
 population = range(1,np)
 tirages = random.sample(population, k)
@@ -64,38 +56,45 @@ while i < len(tirages) :
 	tirages[i] = ((tirages[i]-1) * 4)
 	i += 1
 
-pbar = ProgressBarWrapper(name = 'extracting line : ', maxval=maxval, unit="reads")
-
+sys.stdout.write(str(0)+"/"+str(maxval))
+sys.stdout.flush()
 # extraction des tirage pour le fichier 1
 with open(args.fileName1, 'r') as file1 :
 		i = 0
 		j = 0
-		with open("s_"+args.fileName1, 'w') as output :
+		with open("s_"+path_leaf(args.fileName1), 'w') as output :
 			for line in file1 :
 				if j < len(tirages) :
 					if tirages[j] <= i and i <= (tirages[j]+3) :
 						output.write(str(line))
 					if i >= (tirages[j]+3) :
 						j += 1
-						pbar.update()
+						if j % 100 == 0:
+							sys.stdout.write("\r"+str(j)+"/"+str(maxval))
+							sys.stdout.flush()
 					i += 1
 				else :
 					break
+sys.stdout.write("\r"+"s_"+path_leaf(args.fileName1)+" done.\n")
 
+sys.stdout.write(str(0)+"/"+str(maxval))
+sys.stdout.flush()
+# extraction des tirage pour le fichier 2
 with open(args.fileName2, 'r') as file2 :
 		i = 0
 		j = 0
-		with open("s_"+args.fileName2, 'w') as output :
+		with open("s_"+path_leaf(args.fileName2), 'w') as output :
 			for line in file2 :
 				if j < len(tirages) :
 					if tirages[j] <= i and i <= (tirages[j]+3) :
 						output.write(str(line))
 					if i >= (tirages[j]+3) :
 						j += 1
-						pbar.update()
+						if j % 100 == 0:
+							sys.stdout.write("\r"+str(j)+"/"+str(maxval))
+							sys.stdout.flush()
 					i += 1
 				else :
 					break
-
-pbar.finish()
-
+sys.stdout.write("\r"+"s_"+path_leaf(args.fileName2)+" done.\n")
+sys.stdout.flush()
