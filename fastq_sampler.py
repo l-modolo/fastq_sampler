@@ -29,7 +29,7 @@ def path_leaf(path) :
 parser = argparse.ArgumentParser(prog='fastq_sampler')
 parser.add_argument('-i', action='store', dest='number', help='number of reads to sample')
 parser.add_argument('-f', action='store', dest='fileName1', help='fastq')
-parser.add_argument('-g', action='store', dest='fileName2', help='fastq paired')
+parser.add_argument('-g', action='store', dest='fileName2', default="", help='fastq paired')
 args = parser.parse_args()
 
 print( "number of reads to sample : ", args.number, "\nfastq : ", args.fileName1 )
@@ -80,21 +80,22 @@ sys.stdout.write("\r"+"s_"+path_leaf(args.fileName1)+" done.\n")
 sys.stdout.write(str(0)+"/"+str(maxval))
 sys.stdout.flush()
 # extraction des tirage pour le fichier 2
-with open(args.fileName2, 'r') as file2 :
-		i = 0
-		j = 0
-		with open("s_"+path_leaf(args.fileName2), 'w') as output :
-			for line in file2 :
-				if j < len(tirages) :
-					if tirages[j] <= i and i <= (tirages[j]+3) :
-						output.write(str(line))
-					if i >= (tirages[j]+3) :
-						j += 1
-						if j % 100 == 0:
-							sys.stdout.write("\r"+str(j)+"/"+str(maxval))
-							sys.stdout.flush()
-					i += 1
-				else :
-					break
-sys.stdout.write("\r"+"s_"+path_leaf(args.fileName2)+" done.\n")
-sys.stdout.flush()
+if len(args.fileName2) > 0 :
+	with open(args.fileName2, 'r') as file2 :
+			i = 0
+			j = 0
+			with open("s_"+path_leaf(args.fileName2), 'w') as output :
+				for line in file2 :
+					if j < len(tirages) :
+						if tirages[j] <= i and i <= (tirages[j]+3) :
+							output.write(str(line))
+						if i >= (tirages[j]+3) :
+							j += 1
+							if j % 100 == 0:
+								sys.stdout.write("\r"+str(j)+"/"+str(maxval))
+								sys.stdout.flush()
+						i += 1
+					else :
+						break
+	sys.stdout.write("\r"+"s_"+path_leaf(args.fileName2)+" done.\n")
+	sys.stdout.flush()
