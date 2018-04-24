@@ -1,5 +1,7 @@
 # fastq_sampler
 
+[![DOI](https://zenodo.org/badge/9671832.svg)](https://zenodo.org/badge/latestdoi/9671832)
+
 extract `k` reads from a fastq file or a pair of fastq files in the case of pairends reads without loading the files in memory:
 
 example :
